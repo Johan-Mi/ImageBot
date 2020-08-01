@@ -3,6 +3,7 @@
 
 import json
 import requests
+import urllib.parse
 import discord
 
 PREFIX = "[img]"
@@ -12,7 +13,7 @@ client = discord.Client()
 with open("key") as key_file:
     key = key_file.read()
 
-url = f"https://pixabay.com/api/?key={key}"
+url = f"https://pixabay.com/api/?key={key}&per_page=3"
 
 
 @client.event
@@ -29,17 +30,19 @@ async def on_message(message):
         return
     if message.content.startswith(PREFIX):
         search_term = message.content[len(PREFIX):]
-        search_response = requests.get(url,
-                                       params={
-                                           "q": search_term,
-                                           "per_page": 3
-                                       })
-        search_response = json.loads(search_response.content)
+        search_url = f"{url}&q={urllib.parse.quote(search_term)}"
+        print(search_url)
+        search_response = requests.get(search_url)
         try:
-            image_url = search_response["hits"][0]["largeImageURL"]
-        except IndexError:
-            image_url = "No images found"
-        await message.channel.send(image_url)
+            search_response = json.loads(search_response.content)
+            try:
+                image_url = search_response["hits"][0]["largeImageURL"]
+            except IndexError:
+                image_url = "No images found"
+            await message.channel.send(image_url)
+        except Exception as err:
+            print(search_response.content)
+            await message.channel.send(str(err))
 
 
 def main():
