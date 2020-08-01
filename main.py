@@ -2,7 +2,7 @@
 """This module contains the image bot, which lets you search for images"""
 
 import json
-import requests
+import urllib.request
 import urllib.parse
 import discord
 
@@ -11,7 +11,7 @@ PREFIX = "[img]"
 client = discord.Client()
 
 with open("key") as key_file:
-    key = key_file.read()
+    key = key_file.read().replace("\n", "")
 
 url = f"https://pixabay.com/api/?key={key}&per_page=3"
 
@@ -31,7 +31,7 @@ async def on_message(message):
     if message.content.startswith(PREFIX):
         search_term = message.content[len(PREFIX):]
         search_url = f"{url}&q={urllib.parse.quote(search_term)}"
-        search_response = json.loads(requests.get(search_url).content)
+        search_response = json.loads(urllib.request.urlopen(search_url).read())
         if len(search_response["hits"]) > 0:
             image_url = search_response["hits"][0]["largeImageURL"]
         else:
