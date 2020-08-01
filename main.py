@@ -31,18 +31,12 @@ async def on_message(message):
     if message.content.startswith(PREFIX):
         search_term = message.content[len(PREFIX):]
         search_url = f"{url}&q={urllib.parse.quote(search_term)}"
-        print(search_url)
-        search_response = requests.get(search_url)
-        try:
-            search_response = json.loads(search_response.content)
-            try:
-                image_url = search_response["hits"][0]["largeImageURL"]
-            except IndexError:
-                image_url = "No images found"
-            await message.channel.send(image_url)
-        except Exception as err:
-            print(search_response.content)
-            await message.channel.send(str(err))
+        search_response = json.loads(requests.get(search_url).content)
+        if len(search_response["hits"]) > 0:
+            image_url = search_response["hits"][0]["largeImageURL"]
+        else:
+            image_url = "No images found"
+        await message.channel.send(image_url)
 
 
 def main():
